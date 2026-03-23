@@ -1,5 +1,7 @@
 using DALTWNC_QUIZ.Data;
+using DALTWNC_QUIZ.Patterns.Behavioral;
 using DALTWNC_QUIZ.Patterns.Creational;
+using DALTWNC_QUIZ.Patterns.Structural;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +14,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer("Server=HAUBBI\\SQLEXPRESS;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
+    options.UseSqlServer("Server=LAPTOP-JINS5QEB;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 
 builder.Services.AddSession(options =>
@@ -21,6 +23,21 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+// --- ĐĂNG KÝ BUILDER PATTERN (THÊM VÀO ĐÂY) ---
+// Đăng ký IQuizBuilder để có thể sử dụng Dependency Injection
+builder.Services.AddScoped<IQuizBuilder, QuizBuilder>();
+// Đăng ký QuestionBuilder (thường dùng trực tiếp hoặc qua DI)
+builder.Services.AddScoped<QuestionBuilder>();
+// Đăng ký Director nếu bạn muốn dùng các kịch bản dựng sẵn
+builder.Services.AddScoped<QuizDirector>();
+
+// --- ĐĂNG KÝ STRATEGY PATTERN ---
+// Mỗi khi ứng dụng cần IScoringStrategy, hãy cấp cho nó StandardScoringStrategy
+builder.Services.AddScoped<IScoringStrategy, StandardScoringStrategy>();
+
+// --- ĐĂNG KÝ FACADE PATTERN ---
+builder.Services.AddScoped<IQuizFacade, QuizSubmissionFacade>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

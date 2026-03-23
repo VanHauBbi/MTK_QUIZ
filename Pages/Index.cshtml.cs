@@ -24,10 +24,17 @@ namespace DALTWNC_QUIZ.Pages
         private readonly ApplicationDbContext _context;
         private readonly AppConfigurationManager _configManager;
 
-        public IndexModel(ApplicationDbContext context, AppConfigurationManager configManager)
+        // --- KHAI BÁO BUILDER ---
+        private readonly IQuizBuilder _quizBuilder;
+
+        // --- INJECT BUILDER VÀO CONSTRUCTOR ---
+        public IndexModel(ApplicationDbContext context,
+                          AppConfigurationManager configManager,
+                          IQuizBuilder quizBuilder)
         {
             _context = context;
             _configManager = configManager;
+            _quizBuilder = quizBuilder;
         }
 
         public List<QuizCardViewModel> QuizList { get; set; } = new List<QuizCardViewModel>();
@@ -36,6 +43,20 @@ namespace DALTWNC_QUIZ.Pages
 
         public async Task OnGetAsync()
         {
+            // --- ĐOẠN CODE TEST BUILDER PATTERN ---
+            // Thử tạo một đối tượng Quiz bằng Builder
+            var testQuiz = _quizBuilder
+                .SetBasicInfo("Đề thi Test Builder", "Mô tả tạo bởi Builder Pattern", "System Admin")
+                .ForSubject(1)
+                .SetStatus(true, false)
+                .Build();
+
+            // Ghi log ra cửa sổ Output (Debug) để kiểm tra
+            System.Diagnostics.Debug.WriteLine("======================================");
+            System.Diagnostics.Debug.WriteLine($"SUCCESS: Builder đã khởi tạo thành công: {testQuiz.QuizTitle}");
+            System.Diagnostics.Debug.WriteLine($"Ngày tạo tự động: {testQuiz.CreatedDate}");
+            System.Diagnostics.Debug.WriteLine("======================================");
+
             ViewData["SystemVersion"] = _configManager.SystemVersion;
 
             if (User.Identity != null && User.Identity.IsAuthenticated)
