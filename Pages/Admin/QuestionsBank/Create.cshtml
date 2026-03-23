@@ -9,6 +9,23 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">@ViewData["Title"]</h1>
 </div>
+<div class="card mb-4 shadow-sm">
+    <div class="card-body bg-light">
+        <form method="get" id="selectTypeForm">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="fw-bold text-primary"><i class="fa-solid fa-filter me-1"></i> Định dạng câu hỏi:</label>
+                </div>
+                <div class="col-md-5">
+                    <select name="SelectedQType" asp-for="SelectedQType" class="form-select border-primary" onchange="this.form.submit()">
+                        <option value="Standard">Trắc nghiệm tiêu chuẩn (4 đáp án trống)</option>
+                        <option value="TrueFalse">Đúng / Sai (Mẫu điền sẵn)</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <form method="post">
     <div class="card shadow-sm mb-4">

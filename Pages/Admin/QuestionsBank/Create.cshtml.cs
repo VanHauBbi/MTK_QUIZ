@@ -1,5 +1,6 @@
 using DALTWNC_QUIZ.Data;
 using DALTWNC_QUIZ.Models;
+using DALTWNC_QUIZ.Patterns.Creational;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -22,6 +23,9 @@ namespace DALTWNC_QUIZ.Pages.Admin.QuestionsBank
 
         [BindProperty]
         public List<ChoiceInputModel> Choices { get; set; } = new();
+
+        [BindProperty(SupportsGet = true)]
+        public QuestionType SelectedQType { get; set; } = QuestionType.Standard;
 
         [BindProperty]
         [Required(ErrorMessage = "Vui lòng chọn một đáp án đúng cho câu hỏi.")]
@@ -47,7 +51,13 @@ namespace DALTWNC_QUIZ.Pages.Admin.QuestionsBank
         {
             ViewData["ActivePage"] = "QuestionsBank";
             await LoadDependenciesAsync();
-            Choices = new List<ChoiceInputModel> { new(), new(), new(), new() };
+
+            IQuestionFactory factory = QuestionCreator.GetFactory(SelectedQType);
+
+            QuestionSetup setup = factory.CreateTemplate();
+
+            Question = setup.Question;
+            Choices = setup.Choices;
         }
 
         public async Task<IActionResult> OnPostAsync()
