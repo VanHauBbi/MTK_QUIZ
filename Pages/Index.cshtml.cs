@@ -23,11 +23,15 @@ namespace DALTWNC_QUIZ.Pages
     {
         private readonly ApplicationDbContext _context;
         private readonly AppConfigurationManager _configManager;
+        private readonly DALTWNC_QUIZ.Patterns.Adapter.IQuestionAdapter _questionAdapter;
 
-        public IndexModel(ApplicationDbContext context, AppConfigurationManager configManager)
+        public IndexModel(ApplicationDbContext context,
+                          AppConfigurationManager configManager,
+                          DALTWNC_QUIZ.Patterns.Adapter.IQuestionAdapter questionAdapter)
         {
             _context = context;
             _configManager = configManager;
+            _questionAdapter = questionAdapter;
         }
 
         public List<QuizCardViewModel> QuizList { get; set; } = new List<QuizCardViewModel>();

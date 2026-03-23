@@ -1,4 +1,5 @@
 using DALTWNC_QUIZ.Data;
+using DALTWNC_QUIZ.Patterns.Adapter;
 using DALTWNC_QUIZ.Patterns.Creational;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -12,7 +13,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer("Server=HAUBBI\\SQLEXPRESS;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
+    options.UseSqlServer("Server=LAPTOP-1QUTDPQ3;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 
 builder.Services.AddSession(options =>
@@ -59,6 +60,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddSingleton<AppConfigurationManager>();
+//Adapter và Template
+builder.Services.AddScoped<DALTWNC_QUIZ.Patterns.TemplateMethod.BasicQuizProcessor>();
+builder.Services.AddScoped<DALTWNC_QUIZ.Patterns.Adapter.IQuestionAdapter, DALTWNC_QUIZ.Patterns.Adapter.ExternalQuestionAdapter>();
 
 
 var app = builder.Build();
