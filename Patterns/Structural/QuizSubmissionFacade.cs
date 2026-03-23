@@ -1,6 +1,6 @@
 ﻿using DALTWNC_QUIZ.Data;
 using DALTWNC_QUIZ.Models;
-using DALTWNC_QUIZ.Patterns.Behavioral; // Thêm namespace của Strategy
+using DALTWNC_QUIZ.Patterns.Behavioral; 
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +11,8 @@ namespace DALTWNC_QUIZ.Patterns.Structural
     public class QuizSubmissionFacade : IQuizFacade
     {
         private readonly ApplicationDbContext _context;
-        private readonly IScoringStrategy _scoringStrategy; // Khai báo Strategy
+        private readonly IScoringStrategy _scoringStrategy; 
 
-        // Tiêm Strategy vào Facade
         public QuizSubmissionFacade(ApplicationDbContext context, IScoringStrategy scoringStrategy)
         {
             _context = context;
@@ -30,7 +29,6 @@ namespace DALTWNC_QUIZ.Patterns.Structural
 
             if (attempt == null) return null;
 
-            // 1. Chỉ gán đáp án người dùng chọn vào các câu hỏi
             foreach (var attemptQuestion in attempt.QuizAttemptQuestions)
             {
                 var qIdStr = attemptQuestion.QuestionID.ToString();
@@ -40,10 +38,8 @@ namespace DALTWNC_QUIZ.Patterns.Structural
                 }
             }
 
-            // 2. NHỜ STRATEGY TÍNH ĐIỂM GIÚP (Facade không tự tính nữa)
             var scoringResult = _scoringStrategy.Calculate(attempt.QuizAttemptQuestions, attempt.TotalQuestions);
 
-            // 3. Cập nhật kết quả từ Strategy trả về
             attempt.CorrectAnswers = scoringResult.CorrectCount;
             attempt.Score = scoringResult.Score;
 

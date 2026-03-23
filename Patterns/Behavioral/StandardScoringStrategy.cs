@@ -15,7 +15,7 @@ namespace DALTWNC_QUIZ.Patterns.Behavioral
 
             foreach (var aq in attemptQuestions)
             {
-                // Tìm xem đáp án user chọn có đúng không dựa vào danh sách Choices
+
                 if (aq.SelectedChoiceID.HasValue)
                 {
                     var selectedChoice = aq.Question?.Choices?.FirstOrDefault(c => c.ChoiceID == aq.SelectedChoiceID.Value);
@@ -26,10 +26,9 @@ namespace DALTWNC_QUIZ.Patterns.Behavioral
                 }
             }
 
-            // Tính điểm hệ số 10
             decimal score = ((decimal)correctCount / totalQuestions) * 10;
 
-            return (correctCount, Math.Round(score, 2)); // Làm tròn 2 chữ số thập phân
+            return (correctCount, Math.Round(score, 2)); 
         }
     }
 }

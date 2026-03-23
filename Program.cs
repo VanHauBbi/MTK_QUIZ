@@ -24,19 +24,12 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// --- ĐĂNG KÝ BUILDER PATTERN (THÊM VÀO ĐÂY) ---
-// Đăng ký IQuizBuilder để có thể sử dụng Dependency Injection
 builder.Services.AddScoped<IQuizBuilder, QuizBuilder>();
-// Đăng ký QuestionBuilder (thường dùng trực tiếp hoặc qua DI)
 builder.Services.AddScoped<QuestionBuilder>();
-// Đăng ký Director nếu bạn muốn dùng các kịch bản dựng sẵn
 builder.Services.AddScoped<QuizDirector>();
 
-// --- ĐĂNG KÝ STRATEGY PATTERN ---
-// Mỗi khi ứng dụng cần IScoringStrategy, hãy cấp cho nó StandardScoringStrategy
 builder.Services.AddScoped<IScoringStrategy, StandardScoringStrategy>();
 
-// --- ĐĂNG KÝ FACADE PATTERN ---
 builder.Services.AddScoped<IQuizFacade, QuizSubmissionFacade>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

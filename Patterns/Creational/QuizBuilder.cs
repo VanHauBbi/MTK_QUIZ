@@ -42,7 +42,7 @@ namespace DALTWNC_QUIZ.Patterns.Creational
 
         public IQuizBuilder AddQuestion(Question question)
         {
-            // Vì Quiz và Question quan hệ qua bảng trung gian QuizQuestion
+
             _quiz.QuizQuestions.Add(new QuizQuestion { Question = question });
             return this;
         }
@@ -51,7 +51,7 @@ namespace DALTWNC_QUIZ.Patterns.Creational
         {
             _quiz.TotalQuestions = _quiz.QuizQuestions.Count;
             var result = _quiz;
-            Reset(); // Chuẩn bị cho lần tạo tiếp theo
+            Reset(); 
             return result;
         }
     }
