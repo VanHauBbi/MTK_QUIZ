@@ -6,7 +6,6 @@
     Layout = "_Layout_Cus";
 }
 <link rel="stylesheet" href="~/css/Take_Exam/Take.css" asp-append-version="true" />
-
 <div class="container mt-4">
     @if (!Model.IsExamStarted)
     {
@@ -89,11 +88,13 @@
 
             <div class="col-md-4">
                 <div class="card shadow-sm sticky-top" style="top: 20px;">
-                    <div class="card-header bg-dark text-white text-center">
+                    <div id="timerHeader" class="card-header text-white text-center @Model.TimerUIState.GetColorClass()">
                         <strong>🕒 Thời gian còn lại</strong>
                     </div>
                     <div class="card-body text-center">
-                        <h4 id="timeDisplay" class="fw-bold text-success mb-3">00:00</h4>
+                        <h4 id="timeDisplay" class="fw-bold mb-3">00:00</h4>
+                        <p id="timerMessage" class="small fw-bold">@Model.TimerUIState.GetMessage()</p>
+
                         <button id="submitBtn" type="button" class="btn btn-danger w-100 mb-3">Nộp bài</button>
                         <hr />
                         <div id="question-nav" class="mt-3 question-panel">
@@ -125,11 +126,10 @@
             document.onkeydown = function (e) {
                 if (e.ctrlKey &&
                     (e.keyCode === 67 ||
-                        e.keyCode === 86 || 
+                        e.keyCode === 86 ||
                         e.keyCode === 85 ||
-                        e.keyCode === 88 || 
-                        e.keyCode === 65))
-                {
+                        e.keyCode === 88 ||
+                        e.keyCode === 65)) {
                     return false;
                 }
             };
@@ -233,6 +233,8 @@
             const quizForm = document.getElementById('quizQuestionsForm');
             const submitBtn = document.getElementById("submitBtn");
             const timeDisplay = document.getElementById("timeDisplay");
+            const timerHeader = document.getElementById("timerHeader");
+            const timerMessage = document.getElementById("timerMessage");
             const elapsedInput = document.getElementById("elapsedSecondsInput");
 
             const maxSeconds = @Model.Duration * 60;
@@ -261,14 +263,30 @@
                     updateTimerDisplay();
                 }
             }
-
             function updateTimerDisplay() {
                 let m = Math.floor(totalSeconds / 60);
                 let s = totalSeconds % 60;
                 timeDisplay.innerText = `${m}:${s.toString().padStart(2, '0')}`;
+
+                const ratio = totalSeconds / maxSeconds;
+
                 if (totalSeconds <= 60) {
-                    timeDisplay.classList.remove("text-success");
-                    timeDisplay.classList.add("text-danger");
+                    timerHeader.className = "card-header text-white text-center bg-danger animate-pulse";
+                    timeDisplay.className = "fw-bold text-danger mb-3";
+                    timerMessage.innerText = "KHẨN CẤP! Nộp bài ngay kẻo lỡ!";
+                    timerMessage.className = "small fw-bold text-danger";
+                } else if (ratio < 0.3) {
+                    
+                    timerHeader.className = "card-header text-center bg-warning text-dark";
+                    timeDisplay.className = "fw-bold text-warning mb-3";
+                    timerMessage.innerText = "Nhanh tay lên nào, thời gian không còn nhiều!";
+                    timerMessage.className = "small fw-bold text-warning";
+                } else {
+                    
+                    timerHeader.className = "card-header text-white text-center bg-success";
+                    timeDisplay.className = "fw-bold text-success mb-3";
+                    timerMessage.innerText = "Bạn cứ bình tĩnh làm bài nhé.";
+                    timerMessage.className = "small fw-bold text-success";
                 }
             }
 

@@ -2,6 +2,8 @@ using DALTWNC_QUIZ.Data;
 using DALTWNC_QUIZ.Patterns.Behavioral;
 using DALTWNC_QUIZ.Patterns.Creational;
 using DALTWNC_QUIZ.Patterns.Structural;
+using DALTWNC_QUIZ.Patterns.Decorator.Service;
+using DALTWNC_QUIZ.Patterns.State;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +17,7 @@ builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer("Server=LAPTOP-JINS5QEB;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
+    options.UseSqlServer("Server=LapTopCuaGbao\\HAGIABAO;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 
 builder.Services.AddSession(options =>
@@ -69,8 +72,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddSingleton<AppConfigurationManager>();
-
-
+builder.Services.AddScoped<ISubmissionService>(provider =>
+{
+    var context = provider.GetRequiredService<ApplicationDbContext>();
+    var basicService = new BasicSubmissionService(context);
+    var dbSaveDecorator = new DatabaseSavingDecorator(basicService, context);
+    var highCardDecorator = new HighScoreAlertDecorator(dbSaveDecorator);
+    return highCardDecorator;
+});
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
