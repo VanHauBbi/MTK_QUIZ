@@ -1,7 +1,7 @@
 ﻿using DALTWNC_QUIZ.Data;
 using DALTWNC_QUIZ.Models;
 using System.Collections.Generic;
-using System.Diagnostics; // Thêm thư viện này để in ra cửa sổ Output
+using System.Diagnostics; 
 
 namespace DALTWNC_QUIZ.Patterns.Decorator.Service
 {
@@ -40,20 +40,20 @@ namespace DALTWNC_QUIZ.Patterns.Decorator.Service
         }
     }
 
-    // THÊM LỚP NÀY VÀO ĐỂ HIỆN THÔNG BÁO ĐIỂM CAO
+   
     public class HighScoreAlertDecorator : SubmissionDecorator
     {
         public HighScoreAlertDecorator(ISubmissionService inner) : base(inner) { }
 
         public override QuizAttempt ProcessSubmission(int quizId, int customerId, List<int> selectedChoiceIds)
         {
-            // Chạy logic của các lớp bên trong (Tính điểm, Lưu DB)
+            
             var attempt = base.ProcessSubmission(quizId, customerId, selectedChoiceIds);
 
-            // Kiểm tra nếu điểm >= 8
+            
             if (attempt.Score.GetValueOrDefault() >= 8.0m)
             {
-                // In ra cửa sổ Output (Debug) của Visual Studio
+                
                 Debug.WriteLine("****************************************************");
                 Debug.WriteLine("=== THÔNG BÁO: CHÚC MỪNG BẠN ĐÃ ĐẠT ĐIỂM GIỎI! ===");
                 Debug.WriteLine($"=== SỐ ĐIỂM CỦA BẠN LÀ: {attempt.Score} ===");

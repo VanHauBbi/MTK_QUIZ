@@ -6,29 +6,6 @@
     Layout = "_Layout_Cus";
 }
 <link rel="stylesheet" href="~/css/Take_Exam/Take.css" asp-append-version="true" />
-
-@* --- BỔ SUNG CSS CHO STATE PATTERN --- *@
-<style>
-    .animate-pulse {
-        animation: pulse-red 1s infinite;
-    }
-
-    @@keyframes pulse-red {
-        0% {
-            transform: scale(1);
-        }
-
-        50% {
-            transform: scale(1.02);
-            opacity: 0.9;
-        }
-
-        100% {
-            transform: scale(1);
-        }
-    }
-</style>
-
 <div class="container mt-4">
     @if (!Model.IsExamStarted)
     {
@@ -111,13 +88,11 @@
 
             <div class="col-md-4">
                 <div class="card shadow-sm sticky-top" style="top: 20px;">
-                    @* --- CẬP NHẬT HEADER DÙNG STATE --- *@
                     <div id="timerHeader" class="card-header text-white text-center @Model.TimerUIState.GetColorClass()">
                         <strong>🕒 Thời gian còn lại</strong>
                     </div>
                     <div class="card-body text-center">
                         <h4 id="timeDisplay" class="fw-bold mb-3">00:00</h4>
-                        @* --- THÊM THÔNG BÁO TỪ STATE --- *@
                         <p id="timerMessage" class="small fw-bold">@Model.TimerUIState.GetMessage()</p>
 
                         <button id="submitBtn" type="button" class="btn btn-danger w-100 mb-3">Nộp bài</button>
@@ -288,8 +263,6 @@
                     updateTimerDisplay();
                 }
             }
-
-            // --- CẬP NHẬT LOGIC HIỂN THỊ ĐỂ PHẢN CHIẾU STATE PATTERN ---
             function updateTimerDisplay() {
                 let m = Math.floor(totalSeconds / 60);
                 let s = totalSeconds % 60;
@@ -298,19 +271,18 @@
                 const ratio = totalSeconds / maxSeconds;
 
                 if (totalSeconds <= 60) {
-                    // Urgent State
                     timerHeader.className = "card-header text-white text-center bg-danger animate-pulse";
                     timeDisplay.className = "fw-bold text-danger mb-3";
                     timerMessage.innerText = "KHẨN CẤP! Nộp bài ngay kẻo lỡ!";
                     timerMessage.className = "small fw-bold text-danger";
                 } else if (ratio < 0.3) {
-                    // Warning State
+                    
                     timerHeader.className = "card-header text-center bg-warning text-dark";
                     timeDisplay.className = "fw-bold text-warning mb-3";
                     timerMessage.innerText = "Nhanh tay lên nào, thời gian không còn nhiều!";
                     timerMessage.className = "small fw-bold text-warning";
                 } else {
-                    // Relaxed State
+                    
                     timerHeader.className = "card-header text-white text-center bg-success";
                     timeDisplay.className = "fw-bold text-success mb-3";
                     timerMessage.innerText = "Bạn cứ bình tĩnh làm bài nhé.";

@@ -61,30 +61,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 
 builder.Services.AddSingleton<AppConfigurationManager>();
-
-// === ??NG KÝ DECORATOR PATTERN CHO SUBMISSION SERVICE ===
 builder.Services.AddScoped<ISubmissionService>(provider =>
 {
-    // 1. L?y ApplicationDbContext t? h? th?ng
     var context = provider.GetRequiredService<ApplicationDbContext>();
-
-    // 2. L?p Lõi (Core): Ch? tính toán ?i?m s? d?a trên câu tr? l?i
     var basicService = new BasicSubmissionService(context);
-
-    // 3. L?p B?c 1: L?u k?t qu? vào SQL Server (?i?m, s? câu ?úng...)
     var dbSaveDecorator = new DatabaseSavingDecorator(basicService, context);
-
-    // 4. L?p B?c 2 (Ngoài cùng): Ki?m tra ?i?m >= 8 ?? in dòng chúc m?ng
-    // Chúng ta tr? v? highCardDecorator luôn, không b?c thêm Logging n?a
     var highCardDecorator = new HighScoreAlertDecorator(dbSaveDecorator);
-
     return highCardDecorator;
 });
-// =========================================================
-
-
-
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

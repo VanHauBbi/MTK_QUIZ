@@ -128,18 +128,18 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
                 RemainingSeconds = Duration * 60;
             }
 
-            // --- PHẦN STATE PATTERN TÍNH THEO % ---
-            // Tính phần trăm thời gian còn lại (từ 0 đến 100)
+            
+            
             double percentRemaining = (Duration > 0)
                 ? ((double)RemainingSeconds / (Duration * 60)) * 100
                 : 100;
 
             if (RemainingSeconds <= 60)
             {
-                // Ưu tiên trạng thái khẩn cấp khi còn dưới 1 phút (không đổi)
+                
                 TimerUIState = new DALTWNC_QUIZ.Patterns.State.UrgentState();
             }
-            else if (percentRemaining < 30) // Thay 0.3 bằng 30%
+            else if (percentRemaining < 30) 
             {
                 TimerUIState = new DALTWNC_QUIZ.Patterns.State.WarningState();
             }
@@ -147,7 +147,7 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
             {
                 TimerUIState = new DALTWNC_QUIZ.Patterns.State.RelaxedState();
             }
-            // --------------------------------------
+           
             return Page();
         }
 
@@ -212,17 +212,14 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
                 .Select(int.Parse)
                 .ToList();
 
-            // 1. GỌI DECORATOR ĐỂ TÍNH ĐIỂM (Tạo ra bản ghi kết quả)
+            
             var resultAttempt = _submissionService.ProcessSubmission(Id, customer.CustomerID, selectedChoiceIds);
-
-            // 2. SỬA LỖI TẠI ĐÂY: Xóa bản ghi nháp để không còn bài thi "treo" gây cảnh báo ở trang chủ
             var draftAttempt = await _context.QuizAttempts.FindAsync(currentAttemptId);
             if (draftAttempt != null)
             {
                 _context.QuizAttempts.Remove(draftAttempt);
             }
-
-            // 3. Cập nhật thời gian và trạng thái cho bản ghi kết quả cuối cùng
+           
             var finalAttempt = await _context.QuizAttempts.FindAsync(resultAttempt.QuizAttemptID);
             if (finalAttempt != null)
             {
@@ -230,7 +227,6 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
                 finalAttempt.IsCompleted = true;
                 await _context.SaveChangesAsync();
             }
-
             TempData["SuccessMessage"] = "Bạn đã nộp bài thành công!";
             return RedirectToPage("/Customer/Quiz_Result/Result", new { id = resultAttempt.QuizAttemptID });
         }
