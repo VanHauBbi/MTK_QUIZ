@@ -16,15 +16,14 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
     public class TakeModel : PageModel
     {
         private readonly ApplicationDbContext _context;
-        private readonly IQuizFacade _quizFacade; 
+        private readonly IQuizFacade _quizFacade;
+        private readonly ISubmissionService _submissionService;
         private readonly DALTWNC_QUIZ.Patterns.TemplateMethod.BasicQuizProcessor _quizProcessor;
 
-   
-        public TakeModel(ApplicationDbContext context, IQuizFacade quizFacade)
-        private readonly ISubmissionService _submissionService;
-        public TakeModel(ApplicationDbContext context, ISubmissionService submissionService)
         public TakeModel(
             ApplicationDbContext context,
+            IQuizFacade quizFacade,
+            ISubmissionService submissionService,
             DALTWNC_QUIZ.Patterns.TemplateMethod.BasicQuizProcessor quizProcessor)
         {
             _context = context;
@@ -209,79 +208,47 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
 
         public async Task<IActionResult> OnPostAsync()
         {
+            // 1. Xử lý dữ liệu đầu vào (Loại bỏ các biến trùng lặp)
             if (!int.TryParse(Request.Form["CurrentAttemptID"], out int currentAttemptId))
             {
                 return RedirectToPage("/Index");
-            var currentAttemptIdStr = Request.Form["CurrentAttemptID"];
-            if (string.IsNullOrEmpty(currentAttemptIdStr)) return RedirectToPage("/Index");
+            }
 
-            int currentAttemptId = int.Parse(currentAttemptIdStr);
-            var currentAttemptIdStr = Request.Form["CurrentAttemptID"];
-            if (string.IsNullOrEmpty(currentAttemptIdStr)) return RedirectToPage("/Index");
-
-            int currentAttemptId = int.Parse(currentAttemptIdStr);
             int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
 
             var username = User.FindFirstValue(ClaimTypes.Name);
+            if (string.IsNullOrEmpty(username))
+                return RedirectToPage("/Account/Login");
+
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Username == username);
-            if (customer == null) return RedirectToPage("/Index");
-            var attempt = await _context.QuizAttempts
-                .Include(qa => qa.QuizAttemptQuestions)
-                .FirstOrDefaultAsync(qa => qa.QuizAttemptID == currentAttemptId && qa.IsCompleted == false);
+            if (customer == null)
+                return RedirectToPage("/Index");
 
-            List<int> selectedChoiceIds = Answers.Values
-                .Where(v => int.TryParse(v, out _))
-                .Select(int.Parse)
-                .ToList();
+            // 2. Kích hoạt luồng xử lý nộp bài
+            // LƯU Ý: Đang sử dụng Facade làm luồng chính. 
+            // Các luồng SubmissionService (Decorator) và QuizProcessor (Template Method) cần được tách ra hoặc tích hợp đồng nhất.
 
-            
-            var resultAttempt = _submissionService.ProcessSubmission(Id, customer.CustomerID, selectedChoiceIds);
-            var draftAttempt = await _context.QuizAttempts.FindAsync(currentAttemptId);
-            if (draftAttempt != null)
-            {
-                _context.QuizAttempts.Remove(draftAttempt);
-            foreach (var attemptQuestion in attempt.QuizAttemptQuestions)
-            {
-                var qId = attemptQuestion.QuestionID.ToString();
-                if (Answers.TryGetValue(qId, out string choiceIdStr) && int.TryParse(choiceIdStr, out int choiceId))
-                {
-                    attemptQuestion.SelectedChoiceID = choiceId;
-                }
-            }
-            int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
             var result = await _quizFacade.SubmitQuizAsync(currentAttemptId, Answers, elapsedSecondsFromForm);
-            if (result == null) return RedirectToPage("/Index");
-           
-            var finalAttempt = await _context.QuizAttempts.FindAsync(resultAttempt.QuizAttemptID);
-            if (finalAttempt != null)
-            {
-                finalAttempt.DurationMinute = elapsedSecondsFromForm;
-                finalAttempt.IsCompleted = true;
-                await _context.SaveChangesAsync();
-            }
 
-            attempt.DurationMinute = elapsedSecondsFromForm;
+            if (result == null)
+                return RedirectToPage("/Index");
 
-            await _context.SaveChangesAsync();
+            /* (Đoạn mã của Decorator và Template Method được tạm đóng để tránh lỗi Logic DB)
 
-            try
-            {
-                var logObserver = new DALTWNC_QUIZ.Patterns.Observer.QuizLogObserver();
+            // --- Code của Decorator ---
+            // List<int> selectedChoiceIds = Answers.Values.Where(v => int.TryParse(v, out _)).Select(int.Parse).ToList();
+            // var resultAttempt = _submissionService.ProcessSubmission(Id, customer.CustomerID, selectedChoiceIds);
 
-                _quizProcessor.Attach(logObserver);
+            // --- Code của Template Method ---
+            // var logObserver = new DALTWNC_QUIZ.Patterns.Observer.QuizLogObserver();
+            // _quizProcessor.Attach(logObserver);
+            // await _quizProcessor.SubmitQuizAsync(currentAttemptId);
 
-                await _quizProcessor.SubmitQuizAsync(currentAttemptId);
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError("", "Lỗi: " + ex.Message);
-                return Page();
-            }
+            */
 
+            // 3. Trả về kết quả
             TempData["SuccessMessage"] = "Bạn đã nộp bài thành công!";
             return RedirectToPage("/Customer/Quiz_Result/Result", new { id = result.QuizAttemptID });
-            return RedirectToPage("/Customer/Quiz_Result/Result", new { id = resultAttempt.QuizAttemptID });
-            return RedirectToPage("/Customer/Quiz_Result/Result", new { id = currentAttemptId });
         }
     }
 }
