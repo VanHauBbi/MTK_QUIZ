@@ -1,5 +1,7 @@
 using DALTWNC_QUIZ.Data;
+using DALTWNC_QUIZ.Patterns.Behavioral;
 using DALTWNC_QUIZ.Patterns.Creational;
+using DALTWNC_QUIZ.Patterns.Structural;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +14,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer("Server=HAUBBI\\SQLEXPRESS;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
+    options.UseSqlServer("Server=LAPTOP-JINS5QEB;Database=QuizSystem;Trusted_Connection=True;TrustServerCertificate=True;"));
 
 
 builder.Services.AddSession(options =>
@@ -21,6 +23,14 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
+
+builder.Services.AddScoped<IQuizBuilder, QuizBuilder>();
+builder.Services.AddScoped<QuestionBuilder>();
+builder.Services.AddScoped<QuizDirector>();
+
+builder.Services.AddScoped<IScoringStrategy, StandardScoringStrategy>();
+
+builder.Services.AddScoped<IQuizFacade, QuizSubmissionFacade>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

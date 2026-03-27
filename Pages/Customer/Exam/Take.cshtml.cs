@@ -8,16 +8,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using DALTWNC_QUIZ.Patterns.Structural; 
 
 namespace DALTWNC_QUIZ.Pages.Customer.Exam
 {
     public class TakeModel : PageModel
     {
         private readonly ApplicationDbContext _context;
+        private readonly IQuizFacade _quizFacade; 
 
-        public TakeModel(ApplicationDbContext context)
+   
+        public TakeModel(ApplicationDbContext context, IQuizFacade quizFacade)
         {
             _context = context;
+            _quizFacade = quizFacade;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -130,39 +134,18 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
             return RedirectToPage("Take", new { id = Id });
         }
 
+
         public async Task<IActionResult> OnPostAsync()
         {
-            var currentAttemptId = int.Parse(Request.Form["CurrentAttemptID"]);
-            int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
-
-            var attempt = await _context.QuizAttempts
-                .Include(qa => qa.QuizAttemptQuestions).ThenInclude(qaq => qaq.Question).ThenInclude(q => q.Choices)
-                .FirstOrDefaultAsync(qa => qa.QuizAttemptID == currentAttemptId && qa.IsCompleted == false);
-
-            if (attempt == null) return RedirectToPage("/Index");
-
-            int correct = 0;
-            foreach (var attemptQuestion in attempt.QuizAttemptQuestions)
+            if (!int.TryParse(Request.Form["CurrentAttemptID"], out int currentAttemptId))
             {
-                var qId = attemptQuestion.Question.QuestionID.ToString();
-                if (Answers.TryGetValue(qId, out string choiceIdStr) && int.TryParse(choiceIdStr, out int choiceId))
-                {
-                    attemptQuestion.SelectedChoiceID = choiceId;
-                    var selected = attemptQuestion.Question.Choices.FirstOrDefault(c => c.ChoiceID == choiceId);
-                    if (selected != null && selected.IsCorrect) correct++;
-                }
+                return RedirectToPage("/Index");
             }
-
-            attempt.CorrectAnswers = correct;
-            attempt.Score = attempt.TotalQuestions > 0 ? ((decimal)correct / attempt.TotalQuestions) * 10 : 0;
-            attempt.DurationMinute = elapsedSecondsFromForm;
-            attempt.IsCompleted = true;
-
-            _context.QuizAttempts.Update(attempt);
-            await _context.SaveChangesAsync();
-
+            int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
+            var result = await _quizFacade.SubmitQuizAsync(currentAttemptId, Answers, elapsedSecondsFromForm);
+            if (result == null) return RedirectToPage("/Index");
             TempData["SuccessMessage"] = "Bạn đã nộp bài thành công!";
-            return RedirectToPage("/Customer/Quiz_Result/Result", new { id = attempt.QuizAttemptID });
+            return RedirectToPage("/Customer/Quiz_Result/Result", new { id = result.QuizAttemptID });
         }
     }
 }
