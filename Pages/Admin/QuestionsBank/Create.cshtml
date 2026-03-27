@@ -9,6 +9,35 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">@ViewData["Title"]</h1>
 </div>
+<div class="card mb-4 border-success shadow-sm">
+    <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fa-solid fa-file-excel me-2"></i> Nhập nhanh từ Excel (Adapter Pattern)</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" asp-page-handler="ImportExcel" enctype="multipart/form-data">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">1. Chọn Môn học để Import</label>
+                    <select name="importSubjectId" asp-items="Model.SubjectSL" class="form-select" required>
+                        <option value="">-- Chọn Môn học --</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">2. Chọn File (.xlsx)</label>
+                    <input type="file" name="ExcelFile" class="form-control" accept=".xlsx" required />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fa-solid fa-upload me-2"></i> Tải lên & Import
+                    </button>
+                </div>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted italic">* File Excel cần đúng định dạng mẫu (Cột: Nội dung, Loại, A, B, C, D, Đáp án đúng).</small>
+            </div>
+        </form>
+    </div>
+</div>
 <div class="card mb-4 shadow-sm">
     <div class="card-body bg-light">
         <form method="get" id="selectTypeForm">

@@ -17,15 +17,20 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
     {
         private readonly ApplicationDbContext _context;
         private readonly IQuizFacade _quizFacade; 
+        private readonly DALTWNC_QUIZ.Patterns.TemplateMethod.BasicQuizProcessor _quizProcessor;
 
    
         public TakeModel(ApplicationDbContext context, IQuizFacade quizFacade)
         private readonly ISubmissionService _submissionService;
         public TakeModel(ApplicationDbContext context, ISubmissionService submissionService)
+        public TakeModel(
+            ApplicationDbContext context,
+            DALTWNC_QUIZ.Patterns.TemplateMethod.BasicQuizProcessor quizProcessor)
         {
             _context = context;
             _quizFacade = quizFacade;
             _submissionService = submissionService;
+            _quizProcessor = quizProcessor;
         }
 
         [BindProperty(SupportsGet = true)]
@@ -211,11 +216,18 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
             if (string.IsNullOrEmpty(currentAttemptIdStr)) return RedirectToPage("/Index");
 
             int currentAttemptId = int.Parse(currentAttemptIdStr);
+            var currentAttemptIdStr = Request.Form["CurrentAttemptID"];
+            if (string.IsNullOrEmpty(currentAttemptIdStr)) return RedirectToPage("/Index");
+
+            int currentAttemptId = int.Parse(currentAttemptIdStr);
             int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
 
             var username = User.FindFirstValue(ClaimTypes.Name);
             var customer = await _context.Customers.FirstOrDefaultAsync(c => c.Username == username);
             if (customer == null) return RedirectToPage("/Index");
+            var attempt = await _context.QuizAttempts
+                .Include(qa => qa.QuizAttemptQuestions)
+                .FirstOrDefaultAsync(qa => qa.QuizAttemptID == currentAttemptId && qa.IsCompleted == false);
 
             List<int> selectedChoiceIds = Answers.Values
                 .Where(v => int.TryParse(v, out _))
@@ -228,6 +240,13 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
             if (draftAttempt != null)
             {
                 _context.QuizAttempts.Remove(draftAttempt);
+            foreach (var attemptQuestion in attempt.QuizAttemptQuestions)
+            {
+                var qId = attemptQuestion.QuestionID.ToString();
+                if (Answers.TryGetValue(qId, out string choiceIdStr) && int.TryParse(choiceIdStr, out int choiceId))
+                {
+                    attemptQuestion.SelectedChoiceID = choiceId;
+                }
             }
             int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
             var result = await _quizFacade.SubmitQuizAsync(currentAttemptId, Answers, elapsedSecondsFromForm);
@@ -240,9 +259,29 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
                 finalAttempt.IsCompleted = true;
                 await _context.SaveChangesAsync();
             }
+
+            attempt.DurationMinute = elapsedSecondsFromForm;
+
+            await _context.SaveChangesAsync();
+
+            try
+            {
+                var logObserver = new DALTWNC_QUIZ.Patterns.Observer.QuizLogObserver();
+
+                _quizProcessor.Attach(logObserver);
+
+                await _quizProcessor.SubmitQuizAsync(currentAttemptId);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", "Lỗi: " + ex.Message);
+                return Page();
+            }
+
             TempData["SuccessMessage"] = "Bạn đã nộp bài thành công!";
             return RedirectToPage("/Customer/Quiz_Result/Result", new { id = result.QuizAttemptID });
             return RedirectToPage("/Customer/Quiz_Result/Result", new { id = resultAttempt.QuizAttemptID });
+            return RedirectToPage("/Customer/Quiz_Result/Result", new { id = currentAttemptId });
         }
     }
 }
