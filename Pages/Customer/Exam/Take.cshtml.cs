@@ -163,7 +163,6 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
 
             try
             {
-                // --- Chèn Observer ---
                 var logObserver = new DALTWNC_QUIZ.Patterns.Observer.QuizLogObserver();
 
                 _quizProcessor.Attach(logObserver);
