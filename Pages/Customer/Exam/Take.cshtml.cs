@@ -8,16 +8,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using DALTWNC_QUIZ.Patterns.Structural; // Đã thêm namespace của Facade
+using DALTWNC_QUIZ.Patterns.Structural; 
 
 namespace DALTWNC_QUIZ.Pages.Customer.Exam
 {
     public class TakeModel : PageModel
     {
         private readonly ApplicationDbContext _context;
-        private readonly IQuizFacade _quizFacade; // Đã thêm biến khai báo Facade
+        private readonly IQuizFacade _quizFacade; 
 
-        // Đã tiêm (Inject) IQuizFacade vào Constructor
+   
         public TakeModel(ApplicationDbContext context, IQuizFacade quizFacade)
         {
             _context = context;
@@ -134,21 +134,16 @@ namespace DALTWNC_QUIZ.Pages.Customer.Exam
             return RedirectToPage("Take", new { id = Id });
         }
 
-        // --- HÀM NỘP BÀI ĐÃ ĐƯỢC RÚT GỌN NHỜ FACADE ---
+
         public async Task<IActionResult> OnPostAsync()
         {
-            // 1. Lấy Id lượt thi và thời gian từ Form
             if (!int.TryParse(Request.Form["CurrentAttemptID"], out int currentAttemptId))
             {
                 return RedirectToPage("/Index");
             }
             int.TryParse(Request.Form["ElapsedSeconds"], out int elapsedSecondsFromForm);
-
-            // 2. Gọi Facade để chấm điểm và cập nhật Database
             var result = await _quizFacade.SubmitQuizAsync(currentAttemptId, Answers, elapsedSecondsFromForm);
-
             if (result == null) return RedirectToPage("/Index");
-
             TempData["SuccessMessage"] = "Bạn đã nộp bài thành công!";
             return RedirectToPage("/Customer/Quiz_Result/Result", new { id = result.QuizAttemptID });
         }

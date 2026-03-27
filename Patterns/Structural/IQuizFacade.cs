@@ -6,7 +6,6 @@ namespace DALTWNC_QUIZ.Patterns.Structural
 {
     public interface IQuizFacade
     {
-
         Task<QuizAttempt> SubmitQuizAsync(int attemptId, Dictionary<string, string> userAnswers, int elapsedSeconds);
     }
 }
